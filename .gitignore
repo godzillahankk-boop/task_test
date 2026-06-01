@@ -1,0 +1,12 @@
+# macOS system files苹果系统的自带文件
+.DS_Store
+
+# Python cache files python的缓存文件
+__pycache__/
+*.pyc
+
+# Runtime logs。本地的操作日志
+app.log
+
+# Local runtime data 本地的任务列表数据
+task.json
