@@ -1,7 +1,6 @@
 
 
-
-# 封装函数：遍历所有任务的类型，返回已有类型
+# 封装函数：遍历所有任务的类型，返回已有类型的任务列表字典
 def filter_tasks_by_type(tasks_data, selected_task_type):
     filtered_tasks = []
 

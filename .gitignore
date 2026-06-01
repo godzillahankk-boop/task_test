@@ -10,3 +10,7 @@ app.log
 
 # Local runtime data 本地的任务列表数据
 task.json
+
+
+# 虚拟环境不要提交到 GitHub。
+.venv/
