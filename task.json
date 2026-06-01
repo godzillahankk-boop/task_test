@@ -30,5 +30,21 @@
     "task_status": "未完成",
     "reward_status": "未领取",
     "task_id": 4
+  },
+  {
+    "task_id": 6,
+    "task_name": "new test",
+    "reward_cps": 443,
+    "task_type": "游戏任务",
+    "task_status": "未完成",
+    "reward_status": "未领取"
+  },
+  {
+    "task_id": 7,
+    "task_name": "teststs",
+    "reward_cps": 22,
+    "task_type": "游戏任务",
+    "task_status": "未完成",
+    "reward_status": "未领取"
   }
 ]

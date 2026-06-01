@@ -1,5 +1,5 @@
 from config import TASK_TYPES
-from task_helpers import has_task_len
+from task_helpers import has_task_len, calculate_task_stats
 
 
 
@@ -43,45 +43,23 @@ def show_task_types():
     for index, task_type in enumerate(TASK_TYPES):
         print(f"{index + 1}. {task_type}")
 
-
-
-# 展示任务列表统计
+# 展示统计结果
 def show_task_stats(tasks_data):
-
-    if not has_task_len(tasks_data,"统计"):
+    if not has_task_len(tasks_data, "统计"):
         return
-    
-    total_tasks = len(tasks_data)
-    completed_tasks = 0
-    unfinished_tasks = 0
-    total_cps = 0
-    completed_cps = 0
-    unclaim_cps = 0
-    unfinished_cps = 0
 
-    for task in tasks_data:
-        reward_cps = task["reward_cps"]
-        total_cps = total_cps + reward_cps
-
-        if task["task_status"] == "已完成" and task["reward_status"] == "已领取":
-            completed_tasks = completed_tasks + 1
-            completed_cps = completed_cps + reward_cps
-        elif task["task_status"] == "已完成" and task["reward_status"] == "未领取":
-            completed_tasks = completed_tasks + 1
-            unclaim_cps = unclaim_cps + reward_cps
-        elif task["task_status"] == "未完成" and task["reward_status"] == "未领取":
-    
-            unfinished_tasks = unfinished_tasks + 1
-            unfinished_cps = unfinished_cps + reward_cps
+    stats = calculate_task_stats(tasks_data)
 
     print("\n===== 任务统计 =====")
-    print(f"总任务数: {total_tasks}")
-    print(f"已完成任务数: {completed_tasks}")
-    print(f"未完成任务数: {unfinished_tasks}")
-    print(f"总 CPS 奖励: {total_cps}")
-    print(f"已领取 CPS: {completed_cps}")
-    print(f"可领取 CPS: {unclaim_cps}")
-    print(f"未完成 CPS: {unfinished_cps}")
+    print(f"总任务数: {stats['total_tasks']}")
+    print(f"已完成任务数: {stats['completed_tasks']}")
+    print(f"未完成任务数: {stats['unfinished_tasks']}")
+    print(f"总 CPS 奖励: {stats['total_cps']}")
+    print(f"已领取 CPS: {stats['completed_cps']}")
+    print(f"可领取 CPS: {stats['unclaim_cps']}")
+    print(f"未完成 CPS: {stats['unfinished_cps']}")
+
+
 
 # 展示已添加的任务列表
 def show_tasks(tasks_data):

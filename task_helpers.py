@@ -45,3 +45,42 @@ def get_next_task_id(tasks_data):
             max_task_id = task["task_id"]
 
     return max_task_id + 1
+
+# 展示任务列表统计
+def calculate_task_stats(tasks_data):
+    if not has_task_len(tasks_data,"统计"):
+        return None
+    
+    total_tasks = len(tasks_data)
+    completed_tasks = 0
+    unfinished_tasks = 0
+    total_cps = 0
+    completed_cps = 0
+    unclaim_cps = 0
+    unfinished_cps = 0
+
+    for task in tasks_data:
+        reward_cps = task["reward_cps"]
+        total_cps = total_cps + reward_cps
+
+        if task["task_status"] == "已完成" and task["reward_status"] == "已领取":
+            completed_tasks = completed_tasks + 1
+            completed_cps = completed_cps + reward_cps
+        elif task["task_status"] == "已完成" and task["reward_status"] == "未领取":
+            completed_tasks = completed_tasks + 1
+            unclaim_cps = unclaim_cps + reward_cps
+        elif task["task_status"] == "未完成" and task["reward_status"] == "未领取":
+    
+            unfinished_tasks = unfinished_tasks + 1
+            unfinished_cps = unfinished_cps + reward_cps
+    stats = {
+        "total_tasks": total_tasks,
+        "completed_tasks": completed_tasks,
+        "unfinished_tasks": unfinished_tasks,
+        "total_cps": total_cps,
+        "completed_cps": completed_cps,
+        "unclaim_cps": unclaim_cps,
+        "unfinished_cps": unfinished_cps
+    }
+
+    return stats
