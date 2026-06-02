@@ -1,8 +1,8 @@
 from config import TASK_TYPES, TASK_PRIORITIES
 from storage import save_tasks_to_json
-from task_helpers import has_task_len, find_task_index_by_id, get_next_task_id, filter_tasks_by_type, filter_tasks_by_priority
+from task_helpers import has_task_len, find_task_index_by_id, get_next_task_id, filter_tasks_by_type, filter_tasks_by_priority, filter_overdue_tasks, filter_tasks_due_within_days
 from views import show_task_detail, show_edit_menu, show_tasks, show_task_types, show_task_stats, show_task_priorities
-from input_helper import get_yes_or_no, get_task_index, add_task_name, add_task_reward, add_task_type, add_task_priority, get_task_id, get_type_index, get_priority_index
+from input_helper import get_yes_or_no, get_task_index, add_task_name, add_task_reward, add_task_type, add_task_priority, add_task_due_date, get_task_id, get_type_index, get_priority_index, DUE_DATE_CANCELLED
 
 # 封装函数：查找任务
 def select_task(tasks_data, action_name):
@@ -101,6 +101,34 @@ def show_tasks_by_priority(tasks_data):
     print(f"\n===== 【{selected_priority}】优先级任务列表 =====")
     show_tasks(filtered_tasks)
 
+# 查看已过期任务
+def show_overdue_tasks(tasks_data):
+    if not has_task_len(tasks_data, "查看已过期任务"):
+        return
+
+    filtered_tasks = filter_overdue_tasks(tasks_data)
+
+    if len(filtered_tasks) == 0:
+        print("暂无已过期任务。")
+        return
+
+    print("\n===== 已过期任务列表 =====")
+    show_tasks(filtered_tasks)
+
+# 查看未来 7 天内到期任务
+def show_tasks_due_within_7_days(tasks_data):
+    if not has_task_len(tasks_data, "查看未来 7 天内到期任务"):
+        return
+
+    filtered_tasks = filter_tasks_due_within_days(tasks_data)
+
+    if len(filtered_tasks) == 0:
+        print("暂无未来 7 天内到期任务。")
+        return
+
+    print("\n===== 未来 7 天内到期任务列表 =====")
+    show_tasks(filtered_tasks)
+
 # 封装函数：修改任务
 def edit_selected_task(task, tasks_data):
     print("\n你将要修改以下任务:")
@@ -175,6 +203,21 @@ def edit_selected_task(task, tasks_data):
         task["priority"] = new_priority
 
     elif edit_choice == "5":
+        new_due_date = add_task_due_date()
+
+        if new_due_date == DUE_DATE_CANCELLED:
+            print("任务修改已取消，返回主菜单。")
+            return
+
+        confirm_edit = get_yes_or_no("确认修改任务截止日期吗？")
+
+        if not confirm_edit:
+            print("任务修改已取消，返回主菜单。")
+            return
+
+        task["due_date"] = new_due_date
+
+    elif edit_choice == "6":
         new_name = add_task_name()
         if new_name is None:
             print("任务修改已取消，返回主菜单。")
@@ -195,6 +238,11 @@ def edit_selected_task(task, tasks_data):
             print("任务修改已取消，返回主菜单。")
             return
 
+        new_due_date = add_task_due_date()
+        if new_due_date == DUE_DATE_CANCELLED:
+            print("任务修改已取消，返回主菜单。")
+            return
+
         confirm_edit = get_yes_or_no("确认修改全部任务信息吗？")
 
         if not confirm_edit:
@@ -205,6 +253,7 @@ def edit_selected_task(task, tasks_data):
         task["reward_cps"] = new_reward
         task["task_type"] = new_type
         task["priority"] = new_priority
+        task["due_date"] = new_due_date
 
     else:
         print("输入无效，返回主菜单。")
@@ -238,12 +287,18 @@ def add_task(tasks_data):
         print("任务添加已取消，返回主菜单")
         return
 
+    due_date = add_task_due_date()
+    if due_date == DUE_DATE_CANCELLED:
+        print("任务添加已取消，返回主菜单")
+        return
+
     task = {
         "task_id": get_next_task_id(tasks_data),
         "task_name": task_name,
         "reward_cps": int(task_reward),
         "task_type": task_type,
         "priority": task_priority,
+        "due_date": due_date,
         "task_status": "未完成",
         "reward_status": "未领取"
     }

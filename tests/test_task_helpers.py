@@ -1,5 +1,5 @@
 import pytest
-from task_helpers import calculate_task_stats, get_next_task_id, find_task_index_by_id, filter_tasks_by_type, filter_tasks_by_priority
+from task_helpers import calculate_task_stats, get_next_task_id, find_task_index_by_id, filter_tasks_by_type, filter_tasks_by_priority, is_valid_due_date, filter_overdue_tasks, filter_tasks_due_within_days
 
 @pytest.fixture
 def sample_tasks():
@@ -10,6 +10,7 @@ def sample_tasks():
             "reward_cps": 100,
             "task_type": "社交任务",
             "priority": "high",
+            "due_date": None,
             "task_status": "未完成",
             "reward_status": "未领取"
         },
@@ -19,6 +20,7 @@ def sample_tasks():
             "reward_cps": 200,
             "task_type": "游戏任务",
             "priority": "medium",
+            "due_date": "2026-06-10",
             "task_status": "已完成",
             "reward_status": "未领取"
         },
@@ -28,6 +30,7 @@ def sample_tasks():
             "reward_cps": 300,
             "task_type": "邀请任务",
             "priority": "low",
+            "due_date": "2026-06-11",
             "task_status": "已完成",
             "reward_status": "已领取"
         }
@@ -150,6 +153,58 @@ def test_filter_tasks_by_priority(sample_tasks, priority, expected_count, expect
         task_names.append(task["task_name"])
 
     assert task_names == expected_names
+
+
+@pytest.mark.parametrize(
+    "date_text, expected",
+    [
+        ("2026-06-10", True),
+        ("2026/06/10", False),
+        ("2026-13-01", False),
+        ("", False),
+        (None, True),
+    ]
+)
+def test_is_valid_due_date(date_text, expected):
+    assert is_valid_due_date(date_text) == expected
+
+
+def test_filter_overdue_tasks():
+    tasks_data = [
+        {"task_id": 1, "task_name": "overdue", "due_date": "2026-06-09"},
+        {"task_id": 2, "task_name": "today", "due_date": "2026-06-10"},
+        {"task_id": 3, "task_name": "no due date", "due_date": None},
+        {"task_id": 4, "task_name": "future", "due_date": "2026-06-11"},
+    ]
+
+    filtered_tasks = filter_overdue_tasks(tasks_data, today="2026-06-10")
+
+    task_names = []
+
+    for task in filtered_tasks:
+        task_names.append(task["task_name"])
+
+    assert task_names == ["overdue"]
+
+
+def test_filter_tasks_due_within_days():
+    tasks_data = [
+        {"task_id": 1, "task_name": "yesterday", "due_date": "2026-06-09"},
+        {"task_id": 2, "task_name": "today", "due_date": "2026-06-10"},
+        {"task_id": 3, "task_name": "within 7 days", "due_date": "2026-06-15"},
+        {"task_id": 4, "task_name": "day 7", "due_date": "2026-06-17"},
+        {"task_id": 5, "task_name": "day 8", "due_date": "2026-06-18"},
+        {"task_id": 6, "task_name": "no due date", "due_date": None},
+    ]
+
+    filtered_tasks = filter_tasks_due_within_days(tasks_data, today="2026-06-10")
+
+    task_names = []
+
+    for task in filtered_tasks:
+        task_names.append(task["task_name"])
+
+    assert task_names == ["today", "within 7 days", "day 7"]
 
 
 

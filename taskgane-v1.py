@@ -3,7 +3,7 @@ import logging
 from logger_config import setup_logger
 from storage import load_tasks_from_json, repair_task_ids
 from views import show_menu, show_tasks, show_task_stats
-from task_actions import add_task, complete_task, claim_reward, select_edit_task, delete_one_task, show_task_stats_by_type, show_selected_task_detail, show_tasks_by_type, show_tasks_by_priority, clear_all_tasks
+from task_actions import add_task, complete_task, claim_reward, select_edit_task, delete_one_task, show_task_stats_by_type, show_selected_task_detail, show_tasks_by_type, show_tasks_by_priority, show_overdue_tasks, show_tasks_due_within_7_days, clear_all_tasks
 
 
 # 主流程
@@ -25,7 +25,9 @@ def main():
         "9": show_task_stats_by_type,
         "10": select_edit_task,
         "11": show_selected_task_detail,
-        "12": show_tasks_by_priority
+        "12": show_tasks_by_priority,
+        "13": show_overdue_tasks,
+        "14": show_tasks_due_within_7_days
     }
     
     while True:

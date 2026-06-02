@@ -1,7 +1,8 @@
 import json
 import os
 import logging
-from config import TASK_FILE, TASK_PRIORITIES, DEFAULT_TASK_PRIORITY
+from config import TASK_FILE, TASK_PRIORITIES, DEFAULT_TASK_PRIORITY, DEFAULT_DUE_DATE
+from task_helpers import is_valid_due_date
 
 
 # 读取task.json的数据
@@ -81,6 +82,9 @@ def repair_task_ids(tasks_data):
             task["priority"] = DEFAULT_TASK_PRIORITY
             has_repaired = True
 
+        if "due_date" not in task or not is_valid_due_date(task["due_date"]):
+            task["due_date"] = DEFAULT_DUE_DATE
+            has_repaired = True
+
     if has_repaired:
         save_tasks_to_json(tasks_data)
-

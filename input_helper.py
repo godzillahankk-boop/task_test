@@ -1,7 +1,9 @@
 
 from config import TASK_TYPES, TASK_PRIORITIES
-from task_helpers import has_task_len
+from task_helpers import has_task_len, is_valid_due_date
 from views import show_task_priorities, show_task_types, show_tasks
+
+DUE_DATE_CANCELLED = "__due_date_cancelled__"
 
 # 封装函数：二次获取用户确认
 def get_yes_or_no(message):
@@ -109,6 +111,24 @@ def add_task_priority():
     selected_priority = TASK_PRIORITIES[priority_index]
 
     return selected_priority
+
+# 添加任务截止日期
+def add_task_due_date():
+    while True:
+        due_date = input("请输入任务截止日期，格式 YYYY-MM-DD，直接回车表示不设置截止日期，输入q返回主菜单: ").strip()
+
+        if due_date == "q":
+            print("已取消操作，返回主菜单。")
+            return DUE_DATE_CANCELLED
+
+        if due_date == "":
+            return None
+
+        if not is_valid_due_date(due_date):
+            print("截止日期格式错误，请输入 YYYY-MM-DD 格式。")
+            continue
+
+        return due_date
 
 # 封装函数：获取用户输入的任务id
 def get_task_id(action_name):

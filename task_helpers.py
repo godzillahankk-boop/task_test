@@ -1,5 +1,34 @@
 
 
+from datetime import date, timedelta
+
+
+# 封装函数：校验任务截止日期格式
+def is_valid_due_date(date_text):
+    if date_text is None:
+        return True
+
+    if not isinstance(date_text, str):
+        return False
+
+    try:
+        parsed_date = date.fromisoformat(date_text)
+    except ValueError:
+        return False
+
+    return parsed_date.isoformat() == date_text
+
+
+def get_today(today=None):
+    if today is None:
+        return date.today()
+
+    if isinstance(today, date):
+        return today
+
+    return date.fromisoformat(today)
+
+
 # 封装函数：遍历所有任务的类型，返回已有类型的任务列表字典
 def filter_tasks_by_type(tasks_data, selected_task_type):
     filtered_tasks = []
@@ -16,6 +45,43 @@ def filter_tasks_by_priority(tasks_data, selected_priority):
 
     for task in tasks_data:
         if task["priority"] == selected_priority:
+            filtered_tasks.append(task)
+
+    return filtered_tasks
+
+
+# 封装函数：筛选已过期任务
+def filter_overdue_tasks(tasks_data, today=None):
+    filtered_tasks = []
+    today_date = get_today(today)
+
+    for task in tasks_data:
+        due_date = task.get("due_date")
+
+        if due_date is None or not is_valid_due_date(due_date):
+            continue
+
+        if date.fromisoformat(due_date) < today_date:
+            filtered_tasks.append(task)
+
+    return filtered_tasks
+
+
+# 封装函数：筛选未来指定天数内到期任务
+def filter_tasks_due_within_days(tasks_data, days=7, today=None):
+    filtered_tasks = []
+    today_date = get_today(today)
+    end_date = today_date + timedelta(days=days)
+
+    for task in tasks_data:
+        due_date = task.get("due_date")
+
+        if due_date is None or not is_valid_due_date(due_date):
+            continue
+
+        parsed_due_date = date.fromisoformat(due_date)
+
+        if today_date <= parsed_due_date <= end_date:
             filtered_tasks.append(task)
 
     return filtered_tasks

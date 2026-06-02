@@ -19,7 +19,16 @@ def show_menu():
     print("10. 修改指定任务")
     print("11. 搜索任务详情")
     print("12. 按任务优先级查看任务")
+    print("13. 查看已过期任务")
+    print("14. 查看未来 7 天内到期任务")
     print("q. 退出系统")
+
+# 封装函数：展示截止日期
+def format_due_date(due_date):
+    if due_date is None:
+        return "无"
+
+    return due_date
 
 # 封装函数：打印单个任务详情
 def show_task_detail(task):
@@ -28,6 +37,7 @@ def show_task_detail(task):
     print(f"任务奖励: {task['reward_cps']} CPS")
     print(f"任务类型: {task['task_type']}")
     print(f"任务优先级: {task['priority']}")
+    print(f"任务截止日期: {format_due_date(task['due_date'])}")
     print(f"任务状态: {task['task_status']}")
     print(f"奖励状态: {task['reward_status']}")
 
@@ -38,7 +48,8 @@ def show_edit_menu():
     print("2. 修改任务奖励 CPS")
     print("3. 修改任务类型")
     print("4. 修改任务优先级")
-    print("5. 修改全部信息")
+    print("5. 修改截止日期")
+    print("6. 修改全部信息")
     print("q. 返回主菜单")
 
 # 封装函数：获取并展示任务类型
@@ -77,4 +88,4 @@ def show_tasks(tasks_data):
     print("\n当前任务列表如下:")
 
     for index, task in enumerate(tasks_data, start=1):
-        print(f"{index}. ID: {task['task_id']} | 任务名称: {task['task_name']} | 奖励: {task['reward_cps']} CPS | 任务类型: {task['task_type']} | 优先级: {task['priority']} | 任务状态: {task['task_status']} | 奖励状态：{task['reward_status']}")
+        print(f"{index}. ID: {task['task_id']} | 任务名称: {task['task_name']} | 奖励: {task['reward_cps']} CPS | 任务类型: {task['task_type']} | 优先级: {task['priority']} | 截止日期: {format_due_date(task['due_date'])} | 任务状态: {task['task_status']} | 奖励状态：{task['reward_status']}")
