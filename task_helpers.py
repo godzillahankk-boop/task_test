@@ -10,6 +10,16 @@ def filter_tasks_by_type(tasks_data, selected_task_type):
 
     return filtered_tasks
 
+# 封装函数：遍历所有任务的优先级，返回对应优先级的任务列表
+def filter_tasks_by_priority(tasks_data, selected_priority):
+    filtered_tasks = []
+
+    for task in tasks_data:
+        if task["priority"] == selected_priority:
+            filtered_tasks.append(task)
+
+    return filtered_tasks
+
 # 封装函数：遍历task，找出对应id的task
 def find_task_by_id(tasks_data, task_id):
     for task in tasks_data:

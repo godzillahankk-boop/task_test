@@ -1,7 +1,7 @@
 
-from config import TASK_TYPES
+from config import TASK_TYPES, TASK_PRIORITIES
 from task_helpers import has_task_len
-from views import show_task_types, show_tasks
+from views import show_task_priorities, show_task_types, show_tasks
 
 # 封装函数：二次获取用户确认
 def get_yes_or_no(message):
@@ -53,6 +53,11 @@ def get_type_index(options, action_name):
     option_index = get_index_from_list(options, action_name, "类型")
     return option_index
 
+# 封装函数：获取用户输入的任务优先级编号
+def get_priority_index(options, action_name):
+    priority_index = get_index_from_list(options, action_name, "优先级")
+    return priority_index
+
 # 添加任务名称
 def add_task_name():
     while True: 
@@ -92,6 +97,19 @@ def add_task_type():
 
     return selected_task_type
 
+# 添加任务优先级
+def add_task_priority():
+    print("请选择任务优先级：")
+
+    show_task_priorities()
+
+    priority_index = get_priority_index(TASK_PRIORITIES, "添加的任务优先级")
+    if priority_index is None:
+          return None
+    selected_priority = TASK_PRIORITIES[priority_index]
+
+    return selected_priority
+
 # 封装函数：获取用户输入的任务id
 def get_task_id(action_name):
     while True:
@@ -106,4 +124,3 @@ def get_task_id(action_name):
             continue
 
         return int(user_input)
-

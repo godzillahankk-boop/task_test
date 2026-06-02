@@ -1,5 +1,5 @@
 import pytest
-from task_helpers import calculate_task_stats, get_next_task_id, find_task_index_by_id, filter_tasks_by_type
+from task_helpers import calculate_task_stats, get_next_task_id, find_task_index_by_id, filter_tasks_by_type, filter_tasks_by_priority
 
 @pytest.fixture
 def sample_tasks():
@@ -9,6 +9,7 @@ def sample_tasks():
             "task_name": "task A",
             "reward_cps": 100,
             "task_type": "社交任务",
+            "priority": "high",
             "task_status": "未完成",
             "reward_status": "未领取"
         },
@@ -17,6 +18,7 @@ def sample_tasks():
             "task_name": "task B",
             "reward_cps": 200,
             "task_type": "游戏任务",
+            "priority": "medium",
             "task_status": "已完成",
             "reward_status": "未领取"
         },
@@ -25,6 +27,7 @@ def sample_tasks():
             "task_name": "task C",
             "reward_cps": 300,
             "task_type": "邀请任务",
+            "priority": "low",
             "task_status": "已完成",
             "reward_status": "已领取"
         }
@@ -74,6 +77,9 @@ def test_empty_tasks():
     filtered_tasks = filter_tasks_by_type([], "游戏任务")
     assert filtered_tasks == []
 
+    filtered_tasks = filter_tasks_by_priority([], "high")
+    assert filtered_tasks == []
+
     task_index = find_task_index_by_id([], 2)
     assert task_index is None
 
@@ -84,6 +90,9 @@ def test_edge_tasks(sample_tasks):
 
     filtered_tasks = filter_tasks_by_type(sample_tasks, "浏览任务")
     assert len(filtered_tasks) == 0
+
+    filtered_tasks = filter_tasks_by_priority(sample_tasks, "high")
+    assert len(filtered_tasks) == 1
 
 
 
@@ -110,6 +119,28 @@ def test_get_next_task_id(sample_tasks):
 # 测试筛选并返回对应任务类型
 def test_filter_tasks_by_type(sample_tasks, task_type, expected_count, expected_names):
     filtered_tasks = filter_tasks_by_type(sample_tasks, task_type)
+
+    assert len(filtered_tasks) == expected_count
+
+    task_names = []
+
+    for task in filtered_tasks:
+        task_names.append(task["task_name"])
+
+    assert task_names == expected_names
+
+
+# 测试筛选并返回对应任务优先级
+@pytest.mark.parametrize(
+    "priority, expected_count, expected_names",
+    [
+        ("high", 1, ["task A"]),
+        ("medium", 1, ["task B"]),
+        ("low", 1, ["task C"]),
+    ]
+)
+def test_filter_tasks_by_priority(sample_tasks, priority, expected_count, expected_names):
+    filtered_tasks = filter_tasks_by_priority(sample_tasks, priority)
 
     assert len(filtered_tasks) == expected_count
 
@@ -271,4 +302,3 @@ def test_calculate_task_stats_with_multiple_cases(tasks_data, expected_stats):
     stats = calculate_task_stats(tasks_data)
 
     assert stats == expected_stats
-

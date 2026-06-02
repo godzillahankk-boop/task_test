@@ -1,8 +1,8 @@
-from config import TASK_TYPES
+from config import TASK_TYPES, TASK_PRIORITIES
 from storage import save_tasks_to_json
-from task_helpers import has_task_len, find_task_index_by_id, get_next_task_id, filter_tasks_by_type
-from views import show_task_detail, show_edit_menu, show_tasks, show_task_types, show_task_stats
-from input_helper import get_yes_or_no, get_task_index, add_task_name, add_task_reward, add_task_type, get_task_id, get_type_index
+from task_helpers import has_task_len, find_task_index_by_id, get_next_task_id, filter_tasks_by_type, filter_tasks_by_priority
+from views import show_task_detail, show_edit_menu, show_tasks, show_task_types, show_task_stats, show_task_priorities
+from input_helper import get_yes_or_no, get_task_index, add_task_name, add_task_reward, add_task_type, add_task_priority, get_task_id, get_type_index, get_priority_index
 
 # 封装函数：查找任务
 def select_task(tasks_data, action_name):
@@ -76,6 +76,31 @@ def show_tasks_by_type(tasks_data):
     print(f"\n===== 【{selected_task_type}】任务列表 =====")
     show_tasks(filtered_tasks)
 
+# 按优先级查看任务
+def show_tasks_by_priority(tasks_data):
+    if not has_task_len(tasks_data, "按优先级查看"):
+        return
+
+    print("请选择要查看的任务优先级：")
+
+    show_task_priorities()
+
+    priority_index = get_priority_index(TASK_PRIORITIES, "查看")
+
+    if priority_index is None:
+        return
+
+    selected_priority = TASK_PRIORITIES[priority_index]
+
+    filtered_tasks = filter_tasks_by_priority(tasks_data, selected_priority)
+
+    if len(filtered_tasks) == 0:
+        print(f"暂无【{selected_priority}】优先级的任务。")
+        return
+
+    print(f"\n===== 【{selected_priority}】优先级任务列表 =====")
+    show_tasks(filtered_tasks)
+
 # 封装函数：修改任务
 def edit_selected_task(task, tasks_data):
     print("\n你将要修改以下任务:")
@@ -135,6 +160,21 @@ def edit_selected_task(task, tasks_data):
         task["task_type"] = new_type
 
     elif edit_choice == "4":
+        new_priority = add_task_priority()
+
+        if new_priority is None:
+            print("任务修改已取消，返回主菜单。")
+            return
+
+        confirm_edit = get_yes_or_no("确认修改任务优先级吗？")
+
+        if not confirm_edit:
+            print("任务修改已取消，返回主菜单。")
+            return
+
+        task["priority"] = new_priority
+
+    elif edit_choice == "5":
         new_name = add_task_name()
         if new_name is None:
             print("任务修改已取消，返回主菜单。")
@@ -150,6 +190,11 @@ def edit_selected_task(task, tasks_data):
             print("任务修改已取消，返回主菜单。")
             return
 
+        new_priority = add_task_priority()
+        if new_priority is None:
+            print("任务修改已取消，返回主菜单。")
+            return
+
         confirm_edit = get_yes_or_no("确认修改全部任务信息吗？")
 
         if not confirm_edit:
@@ -159,6 +204,7 @@ def edit_selected_task(task, tasks_data):
         task["task_name"] = new_name
         task["reward_cps"] = new_reward
         task["task_type"] = new_type
+        task["priority"] = new_priority
 
     else:
         print("输入无效，返回主菜单。")
@@ -187,11 +233,17 @@ def add_task(tasks_data):
         print("任务添加已取消，返回主菜单")
         return
 
+    task_priority = add_task_priority()
+    if task_priority is None:
+        print("任务添加已取消，返回主菜单")
+        return
+
     task = {
         "task_id": get_next_task_id(tasks_data),
         "task_name": task_name,
         "reward_cps": int(task_reward),
         "task_type": task_type,
+        "priority": task_priority,
         "task_status": "未完成",
         "reward_status": "未领取"
     }

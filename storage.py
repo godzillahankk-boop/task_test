@@ -1,7 +1,7 @@
 import json
 import os
 import logging
-from config import TASK_FILE
+from config import TASK_FILE, TASK_PRIORITIES, DEFAULT_TASK_PRIORITY
 
 
 # 读取task.json的数据
@@ -11,7 +11,7 @@ def load_tasks_from_json(filename=TASK_FILE):
         return []
 
     try:
-        with open(TASK_FILE, "r", encoding="utf-8") as file:
+        with open(filename, "r", encoding="utf-8") as file:
             tasks = json.load(file)
 
         if not isinstance(tasks, list):
@@ -77,7 +77,10 @@ def repair_task_ids(tasks_data):
             task["reward_status"] = "未领取"
             has_repaired = True
 
+        if "priority" not in task or task["priority"] not in TASK_PRIORITIES:
+            task["priority"] = DEFAULT_TASK_PRIORITY
+            has_repaired = True
+
     if has_repaired:
         save_tasks_to_json(tasks_data)
-
 

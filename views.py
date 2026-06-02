@@ -1,4 +1,4 @@
-from config import TASK_TYPES
+from config import TASK_TYPES, TASK_PRIORITIES
 from task_helpers import has_task_len, calculate_task_stats
 
 
@@ -18,6 +18,7 @@ def show_menu():
     print("9. 按任务类型统计")
     print("10. 修改指定任务")
     print("11. 搜索任务详情")
+    print("12. 按任务优先级查看任务")
     print("q. 退出系统")
 
 # 封装函数：打印单个任务详情
@@ -26,6 +27,7 @@ def show_task_detail(task):
     print(f"任务名称: {task['task_name']}")
     print(f"任务奖励: {task['reward_cps']} CPS")
     print(f"任务类型: {task['task_type']}")
+    print(f"任务优先级: {task['priority']}")
     print(f"任务状态: {task['task_status']}")
     print(f"奖励状态: {task['reward_status']}")
 
@@ -35,13 +37,19 @@ def show_edit_menu():
     print("1. 修改任务名称")
     print("2. 修改任务奖励 CPS")
     print("3. 修改任务类型")
-    print("4. 修改全部信息")
+    print("4. 修改任务优先级")
+    print("5. 修改全部信息")
     print("q. 返回主菜单")
 
 # 封装函数：获取并展示任务类型
 def show_task_types():
     for index, task_type in enumerate(TASK_TYPES):
         print(f"{index + 1}. {task_type}")
+
+# 封装函数：获取并展示任务优先级
+def show_task_priorities():
+    for index, priority in enumerate(TASK_PRIORITIES):
+        print(f"{index + 1}. {priority}")
 
 # 展示统计结果
 def show_task_stats(tasks_data):
@@ -69,4 +77,4 @@ def show_tasks(tasks_data):
     print("\n当前任务列表如下:")
 
     for index, task in enumerate(tasks_data, start=1):
-        print(f"{index}. ID: {task['task_id']} | 任务名称: {task['task_name']} | 奖励: {task['reward_cps']} CPS | 任务类型: {task['task_type']} |  任务状态: {task['task_status']} | 奖励状态：{task['reward_status']}")
+        print(f"{index}. ID: {task['task_id']} | 任务名称: {task['task_name']} | 奖励: {task['reward_cps']} CPS | 任务类型: {task['task_type']} | 优先级: {task['priority']} | 任务状态: {task['task_status']} | 奖励状态：{task['reward_status']}")
