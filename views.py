@@ -21,7 +21,27 @@ def show_menu():
     print("12. 按任务优先级查看任务")
     print("13. 查看已过期任务")
     print("14. 查看未来 7 天内到期任务")
+    print("15. 任务筛选中心")
     print("q. 退出系统")
+
+# 展示任务筛选中心菜单
+def show_filter_center_menu():
+    print("\n===== 任务筛选中心 =====")
+    print("1. 按任务类型筛选")
+    print("2. 按任务优先级筛选")
+    print("3. 按截止日期筛选")
+    print("4. 按完成状态筛选")
+    print("5. 按奖励领取状态筛选")
+    print("q. 返回主菜单")
+
+# 展示筛选结果
+def show_filter_result(title, tasks_data):
+    if len(tasks_data) == 0:
+        print("暂无符合条件的任务。")
+        return
+
+    print(f"\n===== {title} =====")
+    show_tasks(tasks_data)
 
 # 封装函数：展示截止日期
 def format_due_date(due_date):

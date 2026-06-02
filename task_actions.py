@@ -1,8 +1,8 @@
 from config import TASK_TYPES, TASK_PRIORITIES
 from storage import save_tasks_to_json
-from task_helpers import has_task_len, find_task_index_by_id, get_next_task_id, filter_tasks_by_type, filter_tasks_by_priority, filter_overdue_tasks, filter_tasks_due_within_days
-from views import show_task_detail, show_edit_menu, show_tasks, show_task_types, show_task_stats, show_task_priorities
-from input_helper import get_yes_or_no, get_task_index, add_task_name, add_task_reward, add_task_type, add_task_priority, add_task_due_date, get_task_id, get_type_index, get_priority_index, DUE_DATE_CANCELLED
+from task_helpers import has_task_len, find_task_index_by_id, get_next_task_id, filter_tasks_by_type, filter_tasks_by_priority, filter_overdue_tasks, filter_tasks_due_within_days, filter_tasks_by_due_date, filter_tasks_by_task_status, filter_tasks_by_reward_status
+from views import show_task_detail, show_edit_menu, show_tasks, show_task_types, show_task_stats, show_task_priorities, show_filter_result
+from input_helper import get_yes_or_no, get_task_index, add_task_name, add_task_reward, add_task_type, add_task_priority, add_task_due_date, get_task_id, get_type_index, get_priority_index, get_filter_center_choice, get_due_date_filter_query, get_task_type_filter, get_task_priority_filter, get_task_status_filter, get_reward_status_filter, DUE_DATE_CANCELLED
 
 # 封装函数：查找任务
 def select_task(tasks_data, action_name):
@@ -128,6 +128,61 @@ def show_tasks_due_within_7_days(tasks_data):
 
     print("\n===== 未来 7 天内到期任务列表 =====")
     show_tasks(filtered_tasks)
+
+# 任务筛选中心
+def task_filter_center(tasks_data):
+    if not has_task_len(tasks_data, "筛选"):
+        return
+
+    while True:
+        filter_choice = get_filter_center_choice()
+
+        if filter_choice == "q":
+            print("已返回主菜单。")
+            return
+
+        if filter_choice == "1":
+            selected_task_type = get_task_type_filter()
+            if selected_task_type is None:
+                continue
+
+            filtered_tasks = filter_tasks_by_type(tasks_data, selected_task_type)
+            show_filter_result(f"【{selected_task_type}】类型筛选结果", filtered_tasks)
+
+        elif filter_choice == "2":
+            selected_priority = get_task_priority_filter()
+            if selected_priority is None:
+                continue
+
+            filtered_tasks = filter_tasks_by_priority(tasks_data, selected_priority)
+            show_filter_result(f"【{selected_priority}】优先级筛选结果", filtered_tasks)
+
+        elif filter_choice == "3":
+            due_date_query = get_due_date_filter_query()
+            if due_date_query is None:
+                continue
+
+            filtered_tasks = filter_tasks_by_due_date(tasks_data, due_date_query)
+            show_filter_result(f"【{due_date_query}】截止日期筛选结果", filtered_tasks)
+
+        elif filter_choice == "4":
+            selected_status = get_task_status_filter()
+            if selected_status is None:
+                continue
+
+            filtered_tasks = filter_tasks_by_task_status(tasks_data, selected_status)
+            show_filter_result(f"【{selected_status}】完成状态筛选结果", filtered_tasks)
+
+        elif filter_choice == "5":
+            selected_status = get_reward_status_filter()
+            if selected_status is None:
+                continue
+
+            filtered_tasks = filter_tasks_by_reward_status(tasks_data, selected_status)
+            show_filter_result(f"【{selected_status}】奖励领取状态筛选结果", filtered_tasks)
+
+        else:
+            print("输入无效，请重新输入。")
 
 # 封装函数：修改任务
 def edit_selected_task(task, tasks_data):

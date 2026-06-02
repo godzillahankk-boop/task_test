@@ -1,7 +1,7 @@
 
-from config import TASK_TYPES, TASK_PRIORITIES
-from task_helpers import has_task_len, is_valid_due_date
-from views import show_task_priorities, show_task_types, show_tasks
+from config import TASK_TYPES, TASK_PRIORITIES, TASK_STATUS_OPTIONS, REWARD_STATUS_OPTIONS
+from task_helpers import has_task_len, is_valid_due_date, is_valid_due_date_range
+from views import show_filter_center_menu, show_task_priorities, show_task_types, show_tasks
 
 DUE_DATE_CANCELLED = "__due_date_cancelled__"
 
@@ -59,6 +59,133 @@ def get_type_index(options, action_name):
 def get_priority_index(options, action_name):
     priority_index = get_index_from_list(options, action_name, "优先级")
     return priority_index
+
+# 封装函数：获取筛选中心任务类型选择
+def get_task_type_filter():
+    print("请选择要筛选的任务类型：")
+
+    show_task_types()
+
+    while True:
+        user_input = input("请输入要筛选的类型编号, 输入q返回筛选中心: ").strip()
+
+        if user_input == "q":
+            print("已取消操作，返回筛选中心。")
+            return None
+
+        if not user_input.isdigit():
+            print("输入无效，请输入数字编号。")
+            continue
+
+        number = int(user_input)
+
+        if number < 1 or number > len(TASK_TYPES):
+            print("类型编号不存在，请重新输入。")
+            continue
+
+        type_index = number - 1
+        return TASK_TYPES[type_index]
+
+# 封装函数：获取筛选中心任务优先级选择
+def get_task_priority_filter():
+    print("请选择要筛选的任务优先级：")
+
+    show_task_priorities()
+
+    while True:
+        user_input = input("请输入要筛选的优先级编号, 输入q返回筛选中心: ").strip()
+
+        if user_input == "q":
+            print("已取消操作，返回筛选中心。")
+            return None
+
+        if not user_input.isdigit():
+            print("输入无效，请输入数字编号。")
+            continue
+
+        number = int(user_input)
+
+        if number < 1 or number > len(TASK_PRIORITIES):
+            print("优先级编号不存在，请重新输入。")
+            continue
+
+        priority_index = number - 1
+        return TASK_PRIORITIES[priority_index]
+
+# 封装函数：获取筛选中心菜单选择
+def get_filter_center_choice():
+    show_filter_center_menu()
+    user_input = input("请输入你的选择: ").strip()
+    return user_input
+
+# 封装函数：获取日期筛选条件
+def get_due_date_filter_query():
+    while True:
+        due_date_query = input("请输入截止日期，格式 YYYY-MM-DD，或日期范围 YYYY-MM-DD&YYYY-MM-DD，输入q返回筛选中心: ").strip()
+
+        if due_date_query == "q":
+            print("已取消操作，返回筛选中心。")
+            return None
+
+        if is_valid_due_date(due_date_query) or is_valid_due_date_range(due_date_query):
+            return due_date_query
+
+        print("日期输入无效，请重新输入。")
+
+# 封装函数：获取用户输入的任务完成状态
+def get_task_status_filter():
+    print("请选择任务完成状态：")
+
+    for index, status in enumerate(TASK_STATUS_OPTIONS):
+        print(f"{index + 1}. {status}")
+
+    while True:
+        user_input = input("请输入要筛选的状态编号, 输入q返回筛选中心: ").strip()
+
+        if user_input == "q":
+            print("已取消操作，返回筛选中心。")
+            return None
+
+        if not user_input.isdigit():
+            print("输入无效，请输入数字编号。")
+            continue
+
+        number = int(user_input)
+
+        if number < 1 or number > len(TASK_STATUS_OPTIONS):
+            print("状态编号不存在，请重新输入。")
+            continue
+
+        status_index = number - 1
+        return TASK_STATUS_OPTIONS[status_index]
+
+
+# 封装函数：获取用户输入的奖励领取状态
+def get_reward_status_filter():
+    print("请选择奖励领取状态：")
+
+    for index, status in enumerate(REWARD_STATUS_OPTIONS):
+        print(f"{index + 1}. {status}")
+
+    while True:
+        user_input = input("请输入要筛选的状态编号, 输入q返回筛选中心: ").strip()
+
+        if user_input == "q":
+            print("已取消操作，返回筛选中心。")
+            return None
+
+        if not user_input.isdigit():
+            print("输入无效，请输入数字编号。")
+            continue
+
+        number = int(user_input)
+
+        if number < 1 or number > len(REWARD_STATUS_OPTIONS):
+            print("状态编号不存在，请重新输入。")
+            continue
+
+        status_index = number - 1
+        return REWARD_STATUS_OPTIONS[status_index]
 
 # 添加任务名称
 def add_task_name():

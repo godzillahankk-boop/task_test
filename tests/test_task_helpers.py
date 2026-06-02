@@ -1,5 +1,5 @@
 import pytest
-from task_helpers import calculate_task_stats, get_next_task_id, find_task_index_by_id, filter_tasks_by_type, filter_tasks_by_priority, is_valid_due_date, filter_overdue_tasks, filter_tasks_due_within_days
+from task_helpers import calculate_task_stats, get_next_task_id, find_task_index_by_id, filter_tasks_by_type, filter_tasks_by_priority, is_valid_due_date, is_valid_due_date_range, filter_overdue_tasks, filter_tasks_due_within_days, filter_tasks_by_due_date, filter_tasks_by_task_status, filter_tasks_by_reward_status
 
 @pytest.fixture
 def sample_tasks():
@@ -205,6 +205,93 @@ def test_filter_tasks_due_within_days():
         task_names.append(task["task_name"])
 
     assert task_names == ["today", "within 7 days", "day 7"]
+
+
+def test_filter_tasks_by_due_date_exact():
+    tasks_data = [
+        {"task_id": 1, "task_name": "no due date", "due_date": None},
+        {"task_id": 2, "task_name": "target A", "due_date": "2026-06-10"},
+        {"task_id": 3, "task_name": "other", "due_date": "2026-06-11"},
+        {"task_id": 4, "task_name": "target B", "due_date": "2026-06-10"},
+    ]
+
+    filtered_tasks = filter_tasks_by_due_date(tasks_data, "2026-06-10")
+
+    task_names = []
+
+    for task in filtered_tasks:
+        task_names.append(task["task_name"])
+
+    assert task_names == ["target A", "target B"]
+
+
+def test_filter_tasks_by_due_date_range():
+    tasks_data = [
+        {"task_id": 1, "task_name": "before", "due_date": "2026-06-09"},
+        {"task_id": 2, "task_name": "start", "due_date": "2026-06-10"},
+        {"task_id": 3, "task_name": "middle", "due_date": "2026-06-15"},
+        {"task_id": 4, "task_name": "end", "due_date": "2026-06-17"},
+        {"task_id": 5, "task_name": "after", "due_date": "2026-06-18"},
+        {"task_id": 6, "task_name": "no due date", "due_date": None},
+    ]
+
+    filtered_tasks = filter_tasks_by_due_date(tasks_data, "2026-06-10&2026-06-17")
+
+    task_names = []
+
+    for task in filtered_tasks:
+        task_names.append(task["task_name"])
+
+    assert task_names == ["start", "middle", "end"]
+
+
+@pytest.mark.parametrize(
+    "date_range_text, expected",
+    [
+        ("2026-06-10&2026-06-17", True),
+        ("2026/06/10&2026-06-17", False),
+        ("2026-06-18&2026-06-10", False),
+        ("abc", False),
+    ]
+)
+def test_is_valid_due_date_range(date_range_text, expected):
+    assert is_valid_due_date_range(date_range_text) == expected
+
+
+@pytest.mark.parametrize(
+    "selected_status, expected_names",
+    [
+        ("未完成", ["task A"]),
+        ("已完成", ["task B", "task C"]),
+    ]
+)
+def test_filter_tasks_by_task_status(sample_tasks, selected_status, expected_names):
+    filtered_tasks = filter_tasks_by_task_status(sample_tasks, selected_status)
+
+    task_names = []
+
+    for task in filtered_tasks:
+        task_names.append(task["task_name"])
+
+    assert task_names == expected_names
+
+
+@pytest.mark.parametrize(
+    "selected_status, expected_names",
+    [
+        ("未领取", ["task A", "task B"]),
+        ("已领取", ["task C"]),
+    ]
+)
+def test_filter_tasks_by_reward_status(sample_tasks, selected_status, expected_names):
+    filtered_tasks = filter_tasks_by_reward_status(sample_tasks, selected_status)
+
+    task_names = []
+
+    for task in filtered_tasks:
+        task_names.append(task["task_name"])
+
+    assert task_names == expected_names
 
 
 
