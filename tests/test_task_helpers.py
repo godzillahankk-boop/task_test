@@ -1,5 +1,5 @@
 import pytest
-from task_helpers import calculate_task_stats, get_next_task_id, find_task_index_by_id, filter_tasks_by_type, filter_tasks_by_priority, is_valid_due_date, is_valid_due_date_range, filter_overdue_tasks, filter_tasks_due_within_days, filter_tasks_by_due_date, filter_tasks_by_task_status, filter_tasks_by_reward_status, filter_tasks_advanced
+from task_helpers import calculate_task_stats, get_next_task_id, find_task_index_by_id, filter_tasks_by_type, filter_tasks_by_priority, is_valid_due_date, is_valid_due_date_range, filter_overdue_tasks, filter_tasks_due_within_days, filter_tasks_by_due_date, filter_tasks_by_task_status, filter_tasks_by_reward_status, filter_tasks_advanced, sort_tasks
 from input_helper import get_advanced_due_date_range_filter, DUE_DATE_CANCELLED
 
 @pytest.fixture
@@ -303,6 +303,7 @@ def advanced_filter_tasks():
             "task_name": "social unfinished",
             "reward_cps": 100,
             "task_type": "社交任务",
+            "priority": "medium",
             "due_date": "2026-06-10",
             "task_status": "未完成",
             "reward_status": "未领取"
@@ -312,6 +313,7 @@ def advanced_filter_tasks():
             "task_name": "game completed",
             "reward_cps": 200,
             "task_type": "游戏任务",
+            "priority": "high",
             "due_date": "2026-06-15",
             "task_status": "已完成",
             "reward_status": "未领取"
@@ -321,6 +323,7 @@ def advanced_filter_tasks():
             "task_name": "invite completed",
             "reward_cps": 300,
             "task_type": "邀请任务",
+            "priority": "low",
             "due_date": "2026-06-20",
             "task_status": "已完成",
             "reward_status": "已领取"
@@ -330,6 +333,7 @@ def advanced_filter_tasks():
             "task_name": "browse no date",
             "reward_cps": 400,
             "task_type": "浏览任务",
+            "priority": "medium",
             "due_date": None,
             "task_status": "未完成",
             "reward_status": "未领取"
@@ -436,6 +440,72 @@ def test_get_advanced_due_date_range_filter_retries_invalid_date(monkeypatch):
 
     assert start_date == "2026-06-05"
     assert end_date == "2026-06-05"
+
+
+def test_sort_tasks_without_sorting_keeps_order(advanced_filter_tasks):
+    sorted_tasks = sort_tasks(advanced_filter_tasks, "不排序")
+
+    assert get_task_names(sorted_tasks) == [
+        "social unfinished",
+        "game completed",
+        "invite completed",
+        "browse no date"
+    ]
+
+
+def test_sort_tasks_by_due_date_nearest_first_puts_none_last(advanced_filter_tasks):
+    sorted_tasks = sort_tasks(advanced_filter_tasks, "按截止日期从近到远")
+
+    assert get_task_names(sorted_tasks) == [
+        "social unfinished",
+        "game completed",
+        "invite completed",
+        "browse no date"
+    ]
+
+
+def test_sort_tasks_by_due_date_farthest_first_puts_none_last(advanced_filter_tasks):
+    sorted_tasks = sort_tasks(advanced_filter_tasks, "按截止日期从远到近")
+
+    assert get_task_names(sorted_tasks) == [
+        "invite completed",
+        "game completed",
+        "social unfinished",
+        "browse no date"
+    ]
+
+
+def test_sort_tasks_by_reward_high_to_low(advanced_filter_tasks):
+    sorted_tasks = sort_tasks(advanced_filter_tasks, "按 CPS 奖励从高到低")
+
+    assert get_task_names(sorted_tasks) == [
+        "browse no date",
+        "invite completed",
+        "game completed",
+        "social unfinished"
+    ]
+
+
+def test_sort_tasks_by_reward_low_to_high(advanced_filter_tasks):
+    sorted_tasks = sort_tasks(advanced_filter_tasks, "按 CPS 奖励从低到高")
+
+    assert get_task_names(sorted_tasks) == [
+        "social unfinished",
+        "game completed",
+        "invite completed",
+        "browse no date"
+    ]
+
+
+def test_sort_tasks_by_priority(advanced_filter_tasks):
+    sorted_tasks = sort_tasks(advanced_filter_tasks, "按优先级排序 high > medium > low")
+
+    assert get_task_names(sorted_tasks) == [
+        "game completed",
+        "social unfinished",
+        "browse no date",
+        "invite completed"
+    ]
 
 
 

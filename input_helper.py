@@ -1,5 +1,5 @@
 
-from config import TASK_TYPES, TASK_PRIORITIES, TASK_STATUS_OPTIONS, REWARD_STATUS_OPTIONS
+from config import TASK_TYPES, TASK_PRIORITIES, TASK_STATUS_OPTIONS, REWARD_STATUS_OPTIONS, ADVANCED_SORT_OPTIONS
 from task_helpers import has_task_len, is_valid_due_date, is_valid_due_date_range
 from views import show_filter_center_menu, show_task_priorities, show_task_types, show_tasks
 
@@ -326,6 +326,32 @@ def get_advanced_filter_conditions():
     }
 
     return conditions
+
+# 封装函数：获取高级筛选结果排序方式
+def get_advanced_sort_option():
+    print("请选择筛选结果排序方式：")
+
+    for index, sort_option in enumerate(ADVANCED_SORT_OPTIONS):
+        print(f"{index + 1}. {sort_option}")
+
+    while True:
+        user_input = input("请输入排序方式编号, 输入q返回主菜单: ").strip()
+
+        if user_input == "q":
+            print("已取消高级筛选，返回主菜单。")
+            return DUE_DATE_CANCELLED
+
+        if not user_input.isdigit():
+            print("输入无效，请输入数字编号。")
+            continue
+
+        number = int(user_input)
+
+        if number < 1 or number > len(ADVANCED_SORT_OPTIONS):
+            print("排序方式编号不存在，请重新输入。")
+            continue
+
+        return ADVANCED_SORT_OPTIONS[number - 1]
 
 # 添加任务名称
 def add_task_name():

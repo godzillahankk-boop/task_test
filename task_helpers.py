@@ -227,6 +227,43 @@ def calculate_filter_stats(tasks_data):
 
     return stats
 
+
+# 封装函数：排序任务列表
+def sort_tasks(tasks_data, sort_option):
+    sorted_tasks = list(tasks_data)
+    priority_order = {
+        "high": 1,
+        "medium": 2,
+        "low": 3
+    }
+
+    if sort_option == "按截止日期从近到远":
+        sorted_tasks.sort(key=lambda task: (task.get("due_date") is None, task.get("due_date") or "9999-12-31"))
+
+    elif sort_option == "按截止日期从远到近":
+        tasks_with_due_date = []
+        tasks_without_due_date = []
+
+        for task in sorted_tasks:
+            if task.get("due_date") is None:
+                tasks_without_due_date.append(task)
+            else:
+                tasks_with_due_date.append(task)
+
+        tasks_with_due_date.sort(key=lambda task: task["due_date"], reverse=True)
+        sorted_tasks = tasks_with_due_date + tasks_without_due_date
+
+    elif sort_option == "按 CPS 奖励从高到低":
+        sorted_tasks.sort(key=lambda task: task["reward_cps"], reverse=True)
+
+    elif sort_option == "按 CPS 奖励从低到高":
+        sorted_tasks.sort(key=lambda task: task["reward_cps"])
+
+    elif sort_option == "按优先级排序 high > medium > low":
+        sorted_tasks.sort(key=lambda task: priority_order.get(task.get("priority"), 99))
+
+    return sorted_tasks
+
 # 封装函数：遍历task，找出对应id的task
 def find_task_by_id(tasks_data, task_id):
     for task in tasks_data:

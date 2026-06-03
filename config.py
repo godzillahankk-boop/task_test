@@ -5,3 +5,11 @@ DEFAULT_TASK_PRIORITY = "medium"
 DEFAULT_DUE_DATE = None
 TASK_STATUS_OPTIONS = ["未完成", "已完成"]
 REWARD_STATUS_OPTIONS = ["未领取", "已领取"]
+ADVANCED_SORT_OPTIONS = [
+    "不排序",
+    "按截止日期从近到远",
+    "按截止日期从远到近",
+    "按 CPS 奖励从高到低",
+    "按 CPS 奖励从低到高",
+    "按优先级排序 high > medium > low"
+]

@@ -1,8 +1,8 @@
 from config import TASK_TYPES, TASK_PRIORITIES
 from storage import save_tasks_to_json
-from task_helpers import has_task_len, find_task_index_by_id, get_next_task_id, filter_tasks_by_type, filter_tasks_by_priority, filter_overdue_tasks, filter_tasks_due_within_days, filter_tasks_by_due_date, filter_tasks_by_task_status, filter_tasks_by_reward_status, filter_tasks_advanced
+from task_helpers import has_task_len, find_task_index_by_id, get_next_task_id, filter_tasks_by_type, filter_tasks_by_priority, filter_overdue_tasks, filter_tasks_due_within_days, filter_tasks_by_due_date, filter_tasks_by_task_status, filter_tasks_by_reward_status, filter_tasks_advanced, sort_tasks
 from views import show_task_detail, show_edit_menu, show_tasks, show_task_types, show_task_stats, show_task_priorities, show_filter_result, show_advanced_filter_result
-from input_helper import get_yes_or_no, get_task_index, add_task_name, add_task_reward, add_task_type, add_task_priority, add_task_due_date, get_task_id, get_type_index, get_priority_index, get_filter_center_choice, get_due_date_filter_query, get_task_type_filter, get_task_priority_filter, get_task_status_filter, get_reward_status_filter, get_advanced_filter_conditions, DUE_DATE_CANCELLED
+from input_helper import get_yes_or_no, get_task_index, add_task_name, add_task_reward, add_task_type, add_task_priority, add_task_due_date, get_task_id, get_type_index, get_priority_index, get_filter_center_choice, get_due_date_filter_query, get_task_type_filter, get_task_priority_filter, get_task_status_filter, get_reward_status_filter, get_advanced_filter_conditions, get_advanced_sort_option, DUE_DATE_CANCELLED
 
 # 封装函数：查找任务
 def select_task(tasks_data, action_name):
@@ -204,6 +204,13 @@ def advanced_filter_tasks(tasks_data):
         start_date=conditions["start_date"],
         end_date=conditions["end_date"]
     )
+
+    sort_option = get_advanced_sort_option()
+
+    if sort_option == DUE_DATE_CANCELLED:
+        return
+
+    filtered_tasks = sort_tasks(filtered_tasks, sort_option)
 
     show_advanced_filter_result(filtered_tasks)
 
