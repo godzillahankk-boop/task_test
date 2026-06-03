@@ -1,8 +1,8 @@
 from config import TASK_TYPES, TASK_PRIORITIES
 from storage import save_tasks_to_json
-from task_helpers import has_task_len, find_task_index_by_id, get_next_task_id, filter_tasks_by_type, filter_tasks_by_priority, filter_overdue_tasks, filter_tasks_due_within_days, filter_tasks_by_due_date, filter_tasks_by_task_status, filter_tasks_by_reward_status
-from views import show_task_detail, show_edit_menu, show_tasks, show_task_types, show_task_stats, show_task_priorities, show_filter_result
-from input_helper import get_yes_or_no, get_task_index, add_task_name, add_task_reward, add_task_type, add_task_priority, add_task_due_date, get_task_id, get_type_index, get_priority_index, get_filter_center_choice, get_due_date_filter_query, get_task_type_filter, get_task_priority_filter, get_task_status_filter, get_reward_status_filter, DUE_DATE_CANCELLED
+from task_helpers import has_task_len, find_task_index_by_id, get_next_task_id, filter_tasks_by_type, filter_tasks_by_priority, filter_overdue_tasks, filter_tasks_due_within_days, filter_tasks_by_due_date, filter_tasks_by_task_status, filter_tasks_by_reward_status, filter_tasks_advanced
+from views import show_task_detail, show_edit_menu, show_tasks, show_task_types, show_task_stats, show_task_priorities, show_filter_result, show_advanced_filter_result
+from input_helper import get_yes_or_no, get_task_index, add_task_name, add_task_reward, add_task_type, add_task_priority, add_task_due_date, get_task_id, get_type_index, get_priority_index, get_filter_center_choice, get_due_date_filter_query, get_task_type_filter, get_task_priority_filter, get_task_status_filter, get_reward_status_filter, get_advanced_filter_conditions, DUE_DATE_CANCELLED
 
 # 封装函数：查找任务
 def select_task(tasks_data, action_name):
@@ -183,6 +183,29 @@ def task_filter_center(tasks_data):
 
         else:
             print("输入无效，请重新输入。")
+
+# 高级筛选任务
+def advanced_filter_tasks(tasks_data):
+    if not has_task_len(tasks_data, "高级筛选"):
+        return
+
+    print("\n===== 高级筛选任务 =====")
+
+    conditions = get_advanced_filter_conditions()
+
+    if conditions is None:
+        return
+
+    filtered_tasks = filter_tasks_advanced(
+        tasks_data,
+        task_type=conditions["task_type"],
+        task_status=conditions["task_status"],
+        reward_status=conditions["reward_status"],
+        start_date=conditions["start_date"],
+        end_date=conditions["end_date"]
+    )
+
+    show_advanced_filter_result(filtered_tasks)
 
 # 封装函数：修改任务
 def edit_selected_task(task, tasks_data):

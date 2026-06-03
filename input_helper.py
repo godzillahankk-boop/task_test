@@ -187,6 +187,146 @@ def get_reward_status_filter():
         status_index = number - 1
         return REWARD_STATUS_OPTIONS[status_index]
 
+# 封装函数：获取高级筛选中的可选任务类型
+def get_advanced_task_type_filter():
+    print("请选择任务类型：")
+
+    for index, task_type in enumerate(TASK_TYPES):
+        print(f"{index + 1}. {task_type}")
+    print(f"{len(TASK_TYPES) + 1}. 不筛选")
+
+    while True:
+        user_input = input("请输入任务类型编号, 输入q返回主菜单: ").strip()
+
+        if user_input == "q":
+            print("已取消高级筛选，返回主菜单。")
+            return DUE_DATE_CANCELLED
+
+        if not user_input.isdigit():
+            print("输入无效，请输入数字编号。")
+            continue
+
+        number = int(user_input)
+
+        if number < 1 or number > len(TASK_TYPES) + 1:
+            print("类型编号不存在，请重新输入。")
+            continue
+
+        if number == len(TASK_TYPES) + 1:
+            return None
+
+        return TASK_TYPES[number - 1]
+
+# 封装函数：获取高级筛选中的可选任务状态
+def get_advanced_task_status_filter():
+    print("请选择任务状态：")
+
+    for index, status in enumerate(TASK_STATUS_OPTIONS):
+        print(f"{index + 1}. {status}")
+    print(f"{len(TASK_STATUS_OPTIONS) + 1}. 不筛选")
+
+    while True:
+        user_input = input("请输入任务状态编号, 输入q返回主菜单: ").strip()
+
+        if user_input == "q":
+            print("已取消高级筛选，返回主菜单。")
+            return DUE_DATE_CANCELLED
+
+        if not user_input.isdigit():
+            print("输入无效，请输入数字编号。")
+            continue
+
+        number = int(user_input)
+
+        if number < 1 or number > len(TASK_STATUS_OPTIONS) + 1:
+            print("状态编号不存在，请重新输入。")
+            continue
+
+        if number == len(TASK_STATUS_OPTIONS) + 1:
+            return None
+
+        return TASK_STATUS_OPTIONS[number - 1]
+
+# 封装函数：获取高级筛选中的可选奖励状态
+def get_advanced_reward_status_filter():
+    print("请选择奖励状态：")
+
+    for index, status in enumerate(REWARD_STATUS_OPTIONS):
+        print(f"{index + 1}. {status}")
+    print(f"{len(REWARD_STATUS_OPTIONS) + 1}. 不筛选")
+
+    while True:
+        user_input = input("请输入奖励状态编号, 输入q返回主菜单: ").strip()
+
+        if user_input == "q":
+            print("已取消高级筛选，返回主菜单。")
+            return DUE_DATE_CANCELLED
+
+        if not user_input.isdigit():
+            print("输入无效，请输入数字编号。")
+            continue
+
+        number = int(user_input)
+
+        if number < 1 or number > len(REWARD_STATUS_OPTIONS) + 1:
+            print("状态编号不存在，请重新输入。")
+            continue
+
+        if number == len(REWARD_STATUS_OPTIONS) + 1:
+            return None
+
+        return REWARD_STATUS_OPTIONS[number - 1]
+
+# 封装函数：获取高级筛选中的日期范围
+def get_advanced_due_date_range_filter():
+    while True:
+        due_date_query = input("请输入截止日期筛选条件，直接回车不筛选，输入q返回主菜单，支持 YYYY-MM-DD 或 YYYY-MM-DD&YYYY-MM-DD: ").strip()
+
+        if due_date_query == "":
+            return None, None
+
+        if due_date_query == "q":
+            print("已取消高级筛选，返回主菜单。")
+            return DUE_DATE_CANCELLED, DUE_DATE_CANCELLED
+
+        if is_valid_due_date(due_date_query):
+            return due_date_query, due_date_query
+
+        if is_valid_due_date_range(due_date_query):
+            date_parts = due_date_query.split("&")
+            return date_parts[0], date_parts[1]
+
+        print("截止日期筛选条件无效，请重新输入。")
+        continue
+
+# 封装函数：获取高级筛选所有条件
+def get_advanced_filter_conditions():
+    task_type = get_advanced_task_type_filter()
+    if task_type == DUE_DATE_CANCELLED:
+        return None
+
+    task_status = get_advanced_task_status_filter()
+    if task_status == DUE_DATE_CANCELLED:
+        return None
+
+    reward_status = get_advanced_reward_status_filter()
+    if reward_status == DUE_DATE_CANCELLED:
+        return None
+
+    start_date, end_date = get_advanced_due_date_range_filter()
+    if start_date == DUE_DATE_CANCELLED or end_date == DUE_DATE_CANCELLED:
+        return None
+
+    conditions = {
+        "task_type": task_type,
+        "task_status": task_status,
+        "reward_status": reward_status,
+        "start_date": start_date,
+        "end_date": end_date
+    }
+
+    return conditions
+
 # 添加任务名称
 def add_task_name():
     while True: 

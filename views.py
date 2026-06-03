@@ -1,5 +1,5 @@
 from config import TASK_TYPES, TASK_PRIORITIES
-from task_helpers import has_task_len, calculate_task_stats
+from task_helpers import has_task_len, calculate_task_stats, calculate_filter_stats
 
 
 
@@ -22,6 +22,7 @@ def show_menu():
     print("13. 查看已过期任务")
     print("14. 查看未来 7 天内到期任务")
     print("15. 任务筛选中心")
+    print("16. 高级筛选任务")
     print("q. 退出系统")
 
 # 展示任务筛选中心菜单
@@ -42,6 +43,24 @@ def show_filter_result(title, tasks_data):
 
     print(f"\n===== {title} =====")
     show_tasks(tasks_data)
+
+# 展示高级筛选结果
+def show_advanced_filter_result(tasks_data):
+    print("\n===== 高级筛选结果 =====")
+
+    if len(tasks_data) == 0:
+        print("暂无符合条件的任务。")
+    else:
+        show_tasks(tasks_data)
+
+    stats = calculate_filter_stats(tasks_data)
+
+    print("\n===== 筛选结果统计 =====")
+    print(f"任务总数: {stats['total_tasks']}")
+    print(f"已完成数量: {stats['completed_tasks']}")
+    print(f"未完成数量: {stats['unfinished_tasks']}")
+    print(f"总奖励 CPS: {stats['total_cps']}")
+    print(f"可领取 CPS: {stats['unclaim_cps']}")
 
 # 封装函数：展示截止日期
 def format_due_date(due_date):

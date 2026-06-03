@@ -1,5 +1,6 @@
 import pytest
-from task_helpers import calculate_task_stats, get_next_task_id, find_task_index_by_id, filter_tasks_by_type, filter_tasks_by_priority, is_valid_due_date, is_valid_due_date_range, filter_overdue_tasks, filter_tasks_due_within_days, filter_tasks_by_due_date, filter_tasks_by_task_status, filter_tasks_by_reward_status
+from task_helpers import calculate_task_stats, get_next_task_id, find_task_index_by_id, filter_tasks_by_type, filter_tasks_by_priority, is_valid_due_date, is_valid_due_date_range, filter_overdue_tasks, filter_tasks_due_within_days, filter_tasks_by_due_date, filter_tasks_by_task_status, filter_tasks_by_reward_status, filter_tasks_advanced
+from input_helper import get_advanced_due_date_range_filter, DUE_DATE_CANCELLED
 
 @pytest.fixture
 def sample_tasks():
@@ -292,6 +293,149 @@ def test_filter_tasks_by_reward_status(sample_tasks, selected_status, expected_n
         task_names.append(task["task_name"])
 
     assert task_names == expected_names
+
+
+@pytest.fixture
+def advanced_filter_tasks():
+    return [
+        {
+            "task_id": 1,
+            "task_name": "social unfinished",
+            "reward_cps": 100,
+            "task_type": "社交任务",
+            "due_date": "2026-06-10",
+            "task_status": "未完成",
+            "reward_status": "未领取"
+        },
+        {
+            "task_id": 2,
+            "task_name": "game completed",
+            "reward_cps": 200,
+            "task_type": "游戏任务",
+            "due_date": "2026-06-15",
+            "task_status": "已完成",
+            "reward_status": "未领取"
+        },
+        {
+            "task_id": 3,
+            "task_name": "invite completed",
+            "reward_cps": 300,
+            "task_type": "邀请任务",
+            "due_date": "2026-06-20",
+            "task_status": "已完成",
+            "reward_status": "已领取"
+        },
+        {
+            "task_id": 4,
+            "task_name": "browse no date",
+            "reward_cps": 400,
+            "task_type": "浏览任务",
+            "due_date": None,
+            "task_status": "未完成",
+            "reward_status": "未领取"
+        }
+    ]
+
+
+def get_task_names(tasks_data):
+    task_names = []
+
+    for task in tasks_data:
+        task_names.append(task["task_name"])
+
+    return task_names
+
+
+def test_filter_tasks_advanced_by_type_only(advanced_filter_tasks):
+    filtered_tasks = filter_tasks_advanced(advanced_filter_tasks, task_type="社交任务")
+
+    assert get_task_names(filtered_tasks) == ["social unfinished"]
+
+
+def test_filter_tasks_advanced_by_status_only(advanced_filter_tasks):
+    filtered_tasks = filter_tasks_advanced(advanced_filter_tasks, task_status="已完成")
+
+    assert get_task_names(filtered_tasks) == ["game completed", "invite completed"]
+
+
+def test_filter_tasks_advanced_by_date_only(advanced_filter_tasks):
+    filtered_tasks = filter_tasks_advanced(
+        advanced_filter_tasks,
+        start_date="2026-06-10",
+        end_date="2026-06-15"
+    )
+
+    assert get_task_names(filtered_tasks) == ["social unfinished", "game completed"]
+
+
+def test_filter_tasks_advanced_with_multiple_conditions(advanced_filter_tasks):
+    filtered_tasks = filter_tasks_advanced(
+        advanced_filter_tasks,
+        task_type="游戏任务",
+        task_status="已完成",
+        reward_status="未领取",
+        start_date="2026-06-10",
+        end_date="2026-06-17"
+    )
+
+    assert get_task_names(filtered_tasks) == ["game completed"]
+
+
+def test_filter_tasks_advanced_without_matching_result(advanced_filter_tasks):
+    filtered_tasks = filter_tasks_advanced(
+        advanced_filter_tasks,
+        task_type="社交任务",
+        task_status="已完成",
+        reward_status="已领取"
+    )
+
+    assert filtered_tasks == []
+
+
+def test_get_advanced_due_date_range_filter_with_single_date(monkeypatch):
+    monkeypatch.setattr("builtins.input", lambda _: "2026-06-05")
+
+    start_date, end_date = get_advanced_due_date_range_filter()
+
+    assert start_date == "2026-06-05"
+    assert end_date == "2026-06-05"
+
+
+def test_get_advanced_due_date_range_filter_with_date_range(monkeypatch):
+    monkeypatch.setattr("builtins.input", lambda _: "2026-06-01&2026-06-07")
+
+    start_date, end_date = get_advanced_due_date_range_filter()
+
+    assert start_date == "2026-06-01"
+    assert end_date == "2026-06-07"
+
+
+def test_get_advanced_due_date_range_filter_with_empty_input(monkeypatch):
+    monkeypatch.setattr("builtins.input", lambda _: "   ")
+
+    start_date, end_date = get_advanced_due_date_range_filter()
+
+    assert start_date is None
+    assert end_date is None
+
+
+def test_get_advanced_due_date_range_filter_with_cancel(monkeypatch):
+    monkeypatch.setattr("builtins.input", lambda _: "q")
+
+    start_date, end_date = get_advanced_due_date_range_filter()
+
+    assert start_date == DUE_DATE_CANCELLED
+    assert end_date == DUE_DATE_CANCELLED
+
+
+def test_get_advanced_due_date_range_filter_retries_invalid_date(monkeypatch):
+    user_inputs = iter(["2026/06/05", "2026-06-05"])
+    monkeypatch.setattr("builtins.input", lambda _: next(user_inputs))
+
+    start_date, end_date = get_advanced_due_date_range_filter()
+
+    assert start_date == "2026-06-05"
+    assert end_date == "2026-06-05"
 
 
 

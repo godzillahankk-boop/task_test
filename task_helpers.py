@@ -162,6 +162,71 @@ def filter_tasks_by_reward_status(tasks_data, selected_status):
 
     return filtered_tasks
 
+
+# 封装函数：高级筛选任务，多个条件之间为 AND 关系
+def filter_tasks_advanced(tasks_data, task_type=None, task_status=None, reward_status=None, start_date=None, end_date=None):
+    filtered_tasks = []
+
+    for task in tasks_data:
+        if task_type is not None and task["task_type"] != task_type:
+            continue
+
+        if task_status is not None and task["task_status"] != task_status:
+            continue
+
+        if reward_status is not None and task["reward_status"] != reward_status:
+            continue
+
+        if start_date is not None or end_date is not None:
+            due_date = task.get("due_date")
+
+            if due_date is None or not is_valid_due_date(due_date):
+                continue
+
+            parsed_due_date = date.fromisoformat(due_date)
+
+            if start_date is not None and parsed_due_date < date.fromisoformat(start_date):
+                continue
+
+            if end_date is not None and parsed_due_date > date.fromisoformat(end_date):
+                continue
+
+        filtered_tasks.append(task)
+
+    return filtered_tasks
+
+
+# 封装函数：计算筛选结果统计
+def calculate_filter_stats(tasks_data):
+    total_tasks = len(tasks_data)
+    completed_tasks = 0
+    unfinished_tasks = 0
+    total_cps = 0
+    unclaim_cps = 0
+
+    for task in tasks_data:
+        reward_cps = task["reward_cps"]
+        total_cps = total_cps + reward_cps
+
+        if task["task_status"] == "已完成":
+            completed_tasks = completed_tasks + 1
+
+            if task["reward_status"] == "未领取":
+                unclaim_cps = unclaim_cps + reward_cps
+
+        elif task["task_status"] == "未完成":
+            unfinished_tasks = unfinished_tasks + 1
+
+    stats = {
+        "total_tasks": total_tasks,
+        "completed_tasks": completed_tasks,
+        "unfinished_tasks": unfinished_tasks,
+        "total_cps": total_cps,
+        "unclaim_cps": unclaim_cps
+    }
+
+    return stats
+
 # 封装函数：遍历task，找出对应id的task
 def find_task_by_id(tasks_data, task_id):
     for task in tasks_data:
