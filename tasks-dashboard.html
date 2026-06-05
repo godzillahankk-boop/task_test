@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>任务数据库可视化</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f7f9;
+      --panel: #ffffff;
+      --text: #1f2933;
+      --muted: #637083;
+      --border: #dde3ea;
+      --green: #2f8f67;
+      --blue: #276ef1;
+      --amber: #c98208;
+      --red: #c2410c;
+      --ink: #111827;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    main {
+      width: min(1180px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 28px 0 40px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      align-items: flex-end;
+      margin-bottom: 22px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+      line-height: 1.15;
+      color: var(--ink);
+    }
+
+    p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .source {
+      text-align: right;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .summary {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      margin-bottom: 14px;
+    }
+
+    .card,
+    .chart,
+    .table-wrap {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+    }
+
+    .card {
+      padding: 16px;
+      min-height: 104px;
+    }
+
+    .label {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .number {
+      margin-top: 8px;
+      font-size: 34px;
+      line-height: 1;
+      font-weight: 720;
+      color: var(--ink);
+    }
+
+    .sub {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .charts {
+      grid-template-columns: 1.05fr 1fr 1fr;
+      align-items: stretch;
+      margin-bottom: 14px;
+    }
+
+    .chart {
+      padding: 16px;
+      min-height: 278px;
+    }
+
+    h2 {
+      margin: 0 0 14px;
+      font-size: 17px;
+      color: var(--ink);
+    }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: 82px 1fr 32px;
+      gap: 10px;
+      align-items: center;
+      margin: 14px 0;
+      font-size: 14px;
+    }
+
+    .track {
+      height: 12px;
+      border-radius: 999px;
+      background: #e8edf3;
+      overflow: hidden;
+    }
+
+    .fill {
+      height: 100%;
+      border-radius: inherit;
+      background: var(--blue);
+    }
+
+    .donut-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 22px;
+      min-height: 206px;
+    }
+
+    .donut {
+      width: 150px;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: conic-gradient(var(--green) 0 66.67%, var(--red) 66.67% 100%);
+      position: relative;
+      flex: 0 0 auto;
+    }
+
+    .donut::after {
+      content: "";
+      position: absolute;
+      inset: 26px;
+      border-radius: 50%;
+      background: var(--panel);
+    }
+
+    .legend {
+      display: grid;
+      gap: 10px;
+      font-size: 14px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .swatch {
+      width: 11px;
+      height: 11px;
+      border-radius: 3px;
+      background: var(--blue);
+    }
+
+    .timeline {
+      display: grid;
+      gap: 12px;
+      margin-top: 4px;
+    }
+
+    .task {
+      display: grid;
+      grid-template-columns: 94px 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .task:last-child {
+      border-bottom: 0;
+    }
+
+    .date {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .name {
+      font-weight: 650;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 25px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      background: #eef2f7;
+      color: #334155;
+      font-size: 12px;
+      font-weight: 650;
+      white-space: nowrap;
+    }
+
+    .pill.high {
+      background: #fff1e8;
+      color: var(--red);
+    }
+
+    .pill.medium {
+      background: #fff8db;
+      color: var(--amber);
+    }
+
+    .pill.low {
+      background: #eaf2ff;
+      color: var(--blue);
+    }
+
+    .table-wrap {
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th,
+    td {
+      padding: 12px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+
+    th {
+      background: #f9fafb;
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .reward {
+      font-weight: 720;
+      color: var(--green);
+    }
+
+    @media (max-width: 900px) {
+      header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .source {
+        text-align: left;
+        white-space: normal;
+      }
+
+      .summary,
+      .charts {
+        grid-template-columns: 1fr;
+      }
+
+      .task {
+        grid-template-columns: 1fr;
+        gap: 6px;
+      }
+
+      .table-wrap {
+        overflow-x: auto;
+      }
+
+      table {
+        min-width: 760px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <h1>任务数据库可视化</h1>
+        <p>根据 tasks.db 中的 tasks 表生成，展示任务、奖励和截止日期概览。</p>
+      </div>
+      <p class="source">数据源：/Users/hank/Desktop/task-game/tasks.db<br>生成时间：2026-06-05</p>
+    </header>
+
+    <section class="grid summary" aria-label="汇总">
+      <article class="card">
+        <div class="label">任务总数</div>
+        <div class="number">3</div>
+        <div class="sub">全部来自 tasks 表</div>
+      </article>
+      <article class="card">
+        <div class="label">已完成</div>
+        <div class="number">2</div>
+        <div class="sub">完成率 66.7%</div>
+      </article>
+      <article class="card">
+        <div class="label">总奖励</div>
+        <div class="number">1,200</div>
+        <div class="sub">reward_cps 合计</div>
+      </article>
+      <article class="card">
+        <div class="label">未领取奖励</div>
+        <div class="number">3</div>
+        <div class="sub">所有任务奖励仍未领取</div>
+      </article>
+    </section>
+
+    <section class="grid charts" aria-label="图表">
+      <article class="chart">
+        <h2>奖励分布</h2>
+        <div class="bar-row">
+          <span>follow us</span>
+          <div class="track"><div class="fill" style="width:12.5%; background: var(--amber);"></div></div>
+          <strong>100</strong>
+        </div>
+        <div class="bar-row">
+          <span>play game</span>
+          <div class="track"><div class="fill" style="width:37.5%; background: var(--blue);"></div></div>
+          <strong>300</strong>
+        </div>
+        <div class="bar-row">
+          <span>invite friends</span>
+          <div class="track"><div class="fill" style="width:100%; background: var(--green);"></div></div>
+          <strong>800</strong>
+        </div>
+      </article>
+
+      <article class="chart">
+        <h2>完成状态</h2>
+        <div class="donut-wrap">
+          <div class="donut" role="img" aria-label="已完成 2，未完成 1"></div>
+          <div class="legend">
+            <div class="legend-item"><span class="swatch" style="background: var(--green);"></span>已完成：2</div>
+            <div class="legend-item"><span class="swatch" style="background: var(--red);"></span>未完成：1</div>
+          </div>
+        </div>
+      </article>
+
+      <article class="chart">
+        <h2>截止日期</h2>
+        <div class="timeline">
+          <div class="task">
+            <div class="date">2026-06-05</div>
+            <div class="name">follow us</div>
+            <span class="pill medium">medium</span>
+          </div>
+          <div class="task">
+            <div class="date">2026-06-10</div>
+            <div class="name">play game</div>
+            <span class="pill low">low</span>
+          </div>
+          <div class="task">
+            <div class="date">2026-08-01</div>
+            <div class="name">invite friends</div>
+            <span class="pill high">high</span>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section class="table-wrap" aria-label="任务明细">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>任务</th>
+            <th>类型</th>
+            <th>优先级</th>
+            <th>截止日期</th>
+            <th>任务状态</th>
+            <th>奖励状态</th>
+            <th>奖励 CPS</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td>follow us</td>
+            <td>社交任务</td>
+            <td><span class="pill medium">medium</span></td>
+            <td>2026-06-05</td>
+            <td>未完成</td>
+            <td>未领取</td>
+            <td class="reward">100</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>play game</td>
+            <td>游戏任务</td>
+            <td><span class="pill low">low</span></td>
+            <td>2026-06-10</td>
+            <td>已完成</td>
+            <td>未领取</td>
+            <td class="reward">300</td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td>invite friends</td>
+            <td>邀请任务</td>
+            <td><span class="pill high">high</span></td>
+            <td>2026-08-01</td>
+            <td>已完成</td>
+            <td>未领取</td>
+            <td class="reward">800</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+</body>
+</html>
