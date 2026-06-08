@@ -1,7 +1,7 @@
 from config import TASK_TYPES, TASK_PRIORITIES
-from storage import save_tasks_to_json
-from task_helpers import has_task_len, find_task_index_by_id, get_next_task_id, filter_tasks_by_type, filter_tasks_by_priority, filter_overdue_tasks, filter_tasks_due_within_days, filter_tasks_by_due_date, filter_tasks_by_task_status, filter_tasks_by_reward_status, filter_tasks_advanced, sort_tasks
-from views import show_task_detail, show_edit_menu, show_tasks, show_task_types, show_task_stats, show_task_priorities, show_filter_result, show_advanced_filter_result
+from storage import get_task_stats_by_type_from_db, get_overdue_tasks_from_db, get_tasks_due_within_days_from_db, get_tasks_by_due_date_from_db, get_tasks_by_reward_status_from_db, get_tasks_by_status_from_db, clear_all_tasks_in_db, insert_task_to_db, update_task_status_in_db, update_reward_status_in_db, delete_task_from_db, update_task_field_in_db, get_tasks_by_type_from_db, get_tasks_by_priority_from_db, get_tasks_advanced_from_db
+from task_helpers import has_task_len, find_task_index_by_id
+from views import show_task_detail, show_edit_menu, show_tasks, show_task_types, show_task_priorities, show_filter_result, show_advanced_filter_result
 from input_helper import get_yes_or_no, get_task_index, add_task_name, add_task_reward, add_task_type, add_task_priority, add_task_due_date, get_task_id, get_type_index, get_priority_index, get_filter_center_choice, get_due_date_filter_query, get_task_type_filter, get_task_priority_filter, get_task_status_filter, get_reward_status_filter, get_advanced_filter_conditions, get_advanced_sort_option, DUE_DATE_CANCELLED
 
 # 封装函数：查找任务
@@ -67,7 +67,8 @@ def show_tasks_by_type(tasks_data):
 
     selected_task_type = TASK_TYPES[type_index]
 
-    filtered_tasks = filter_tasks_by_type(tasks_data, selected_task_type)
+
+    filtered_tasks = get_tasks_by_type_from_db(selected_task_type)
 
     if len(filtered_tasks) == 0:
         print(f"暂无【{selected_task_type}】类型的任务。")
@@ -92,7 +93,7 @@ def show_tasks_by_priority(tasks_data):
 
     selected_priority = TASK_PRIORITIES[priority_index]
 
-    filtered_tasks = filter_tasks_by_priority(tasks_data, selected_priority)
+    filtered_tasks = get_tasks_by_priority_from_db(selected_priority)
 
     if len(filtered_tasks) == 0:
         print(f"暂无【{selected_priority}】优先级的任务。")
@@ -106,7 +107,7 @@ def show_overdue_tasks(tasks_data):
     if not has_task_len(tasks_data, "查看已过期任务"):
         return
 
-    filtered_tasks = filter_overdue_tasks(tasks_data)
+    filtered_tasks = get_overdue_tasks_from_db()
 
     if len(filtered_tasks) == 0:
         print("暂无已过期任务。")
@@ -120,7 +121,7 @@ def show_tasks_due_within_7_days(tasks_data):
     if not has_task_len(tasks_data, "查看未来 7 天内到期任务"):
         return
 
-    filtered_tasks = filter_tasks_due_within_days(tasks_data)
+    filtered_tasks = get_tasks_due_within_days_from_db()
 
     if len(filtered_tasks) == 0:
         print("暂无未来 7 天内到期任务。")
@@ -146,7 +147,7 @@ def task_filter_center(tasks_data):
             if selected_task_type is None:
                 continue
 
-            filtered_tasks = filter_tasks_by_type(tasks_data, selected_task_type)
+            filtered_tasks = get_tasks_by_type_from_db(selected_task_type)
             show_filter_result(f"【{selected_task_type}】类型筛选结果", filtered_tasks)
 
         elif filter_choice == "2":
@@ -154,7 +155,7 @@ def task_filter_center(tasks_data):
             if selected_priority is None:
                 continue
 
-            filtered_tasks = filter_tasks_by_priority(tasks_data, selected_priority)
+            filtered_tasks = get_tasks_by_priority_from_db(selected_priority)
             show_filter_result(f"【{selected_priority}】优先级筛选结果", filtered_tasks)
 
         elif filter_choice == "3":
@@ -162,7 +163,7 @@ def task_filter_center(tasks_data):
             if due_date_query is None:
                 continue
 
-            filtered_tasks = filter_tasks_by_due_date(tasks_data, due_date_query)
+            filtered_tasks = get_tasks_by_due_date_from_db(due_date_query)
             show_filter_result(f"【{due_date_query}】截止日期筛选结果", filtered_tasks)
 
         elif filter_choice == "4":
@@ -170,7 +171,7 @@ def task_filter_center(tasks_data):
             if selected_status is None:
                 continue
 
-            filtered_tasks = filter_tasks_by_task_status(tasks_data, selected_status)
+            filtered_tasks = get_tasks_by_status_from_db(selected_status)
             show_filter_result(f"【{selected_status}】完成状态筛选结果", filtered_tasks)
 
         elif filter_choice == "5":
@@ -178,7 +179,7 @@ def task_filter_center(tasks_data):
             if selected_status is None:
                 continue
 
-            filtered_tasks = filter_tasks_by_reward_status(tasks_data, selected_status)
+            filtered_tasks = get_tasks_by_reward_status_from_db(selected_status)
             show_filter_result(f"【{selected_status}】奖励领取状态筛选结果", filtered_tasks)
 
         else:
@@ -196,25 +197,34 @@ def advanced_filter_tasks(tasks_data):
     if conditions is None:
         return
 
-    filtered_tasks = filter_tasks_advanced(
-        tasks_data,
-        task_type=conditions["task_type"],
-        task_status=conditions["task_status"],
-        reward_status=conditions["reward_status"],
-        start_date=conditions["start_date"],
-        end_date=conditions["end_date"]
-    )
-
     sort_option = get_advanced_sort_option()
 
     if sort_option == DUE_DATE_CANCELLED:
         return
 
-    filtered_tasks = sort_tasks(filtered_tasks, sort_option)
+    filtered_tasks = get_tasks_advanced_from_db(
+        task_type=conditions["task_type"],
+        task_status=conditions["task_status"],
+        reward_status=conditions["reward_status"],
+        start_date=conditions["start_date"],
+        end_date=conditions["end_date"],
+        sort_option=sort_option
+    )
 
     show_advanced_filter_result(filtered_tasks)
 
 # 封装函数：修改任务
+def update_selected_task_field(task, field_name, new_value):
+    success = update_task_field_in_db(task["task_id"], field_name, new_value)
+
+    if not success:
+        print("数据库中未找到该任务，无法修改。")
+        return False
+
+    task[field_name] = new_value
+    return True
+
+
 def edit_selected_task(task, tasks_data):
     print("\n你将要修改以下任务:")
     show_task_detail(task)
@@ -240,7 +250,8 @@ def edit_selected_task(task, tasks_data):
             print("任务修改已取消，返回主菜单。")
             return
 
-        task["task_name"] = new_name
+        if not update_selected_task_field(task, "task_name", new_name):
+            return
 
     elif edit_choice == "2":
         new_reward = add_task_reward()
@@ -255,7 +266,8 @@ def edit_selected_task(task, tasks_data):
             print("任务修改已取消，返回主菜单。")
             return
 
-        task["reward_cps"] = new_reward
+        if not update_selected_task_field(task, "reward_cps", new_reward):
+            return
 
     elif edit_choice == "3":
         new_type = add_task_type()
@@ -270,7 +282,8 @@ def edit_selected_task(task, tasks_data):
             print("任务修改已取消，返回主菜单。")
             return
 
-        task["task_type"] = new_type
+        if not update_selected_task_field(task, "task_type", new_type):
+            return
 
     elif edit_choice == "4":
         new_priority = add_task_priority()
@@ -285,7 +298,8 @@ def edit_selected_task(task, tasks_data):
             print("任务修改已取消，返回主菜单。")
             return
 
-        task["priority"] = new_priority
+        if not update_selected_task_field(task, "priority", new_priority):
+            return
 
     elif edit_choice == "5":
         new_due_date = add_task_due_date()
@@ -300,7 +314,8 @@ def edit_selected_task(task, tasks_data):
             print("任务修改已取消，返回主菜单。")
             return
 
-        task["due_date"] = new_due_date
+        if not update_selected_task_field(task, "due_date", new_due_date):
+            return
 
     elif edit_choice == "6":
         new_name = add_task_name()
@@ -334,17 +349,21 @@ def edit_selected_task(task, tasks_data):
             print("任务修改已取消，返回主菜单。")
             return
 
-        task["task_name"] = new_name
-        task["reward_cps"] = new_reward
-        task["task_type"] = new_type
-        task["priority"] = new_priority
-        task["due_date"] = new_due_date
+        updates = [
+            ("task_name", new_name),
+            ("reward_cps", new_reward),
+            ("task_type", new_type),
+            ("priority", new_priority),
+            ("due_date", new_due_date),
+        ]
+
+        for field_name, new_value in updates:
+            if not update_selected_task_field(task, field_name, new_value):
+                return
 
     else:
         print("输入无效，返回主菜单。")
         return
-
-    save_tasks_to_json(tasks_data)
 
     print("\n任务修改成功！修改后的任务信息如下：")
     show_task_detail(task)
@@ -378,7 +397,7 @@ def add_task(tasks_data):
         return
 
     task = {
-        "task_id": get_next_task_id(tasks_data),
+        "task_id": "保存后生成",
         "task_name": task_name,
         "reward_cps": int(task_reward),
         "task_type": task_type,
@@ -387,6 +406,7 @@ def add_task(tasks_data):
         "task_status": "未完成",
         "reward_status": "未领取"
     }
+
     print("\n===== 新增任务 =====")
     show_task_detail(task)
     
@@ -395,8 +415,10 @@ def add_task(tasks_data):
        print("已取消操作！")
        return
  
+    new_task_id = insert_task_to_db(task)
+    task["task_id"] = new_task_id
     tasks_data.append(task)
-    save_tasks_to_json(tasks_data)
+
     print("任务新增成功！")
     return
 
@@ -419,15 +441,20 @@ def complete_task(tasks_data):
         print("已取消操作，返回主菜单。")
         return
 
+    success = update_task_status_in_db(task["task_id"], "已完成")
+
+    if not success:
+        print("数据库中未找到该任务，无法完成。")
+        return
+
     task["task_status"] = "已完成"
-    save_tasks_to_json(tasks_data)
+
     print(f"任务【{task['task_name']}】已标记为已完成。")
-    return
 
 
 # 领取奖励
 def claim_reward(tasks_data):
-    task_index, task = select_task(tasks_data, "完成任务")
+    task_index, task = select_task(tasks_data, "领取奖励")
 
     if task is None:
         return
@@ -449,9 +476,15 @@ def claim_reward(tasks_data):
         print("已取消操作，返回主菜单。")
         return
 
+    success = update_reward_status_in_db(task["task_id"], "已领取")
+
+    if not success:
+        print("数据库中未找到该任务，无法领取奖励。")
+        return
+
     task["reward_status"] = "已领取"
-    save_tasks_to_json(tasks_data)
-    print(f"已领取【{task['task_name']}】的奖励，奖励金额为【{task['reward_cps']}】。")
+
+    print(f"已领取 {task['reward_cps']} CPS")
     return
 
 # 查找任务+修改任务
@@ -480,11 +513,15 @@ def delete_one_task(tasks_data):
         print("已取消删除，返回主菜单。")
         return
 
-    deleted_task = tasks_data.pop(task_index)
+    success = delete_task_from_db(task["task_id"])
 
-    save_tasks_to_json(tasks_data)
+    if not success:
+        print("数据库中未找到该任务，无法删除。")
+        return
 
-    print(f"任务【{deleted_task['task_name']}】已删除。")
+    tasks_data.pop(task_index)
+
+    print(f"任务【{task['task_id']}】已删除。")
 
 # 展示按任务类型的统计
 def show_task_stats_by_type(tasks_data):
@@ -502,14 +539,20 @@ def show_task_stats_by_type(tasks_data):
 
     selected_task_type = TASK_TYPES[type_index]
 
-    filtered_tasks = filter_tasks_by_type(tasks_data, selected_task_type)
+    stats = get_task_stats_by_type_from_db(selected_task_type)
 
-    if len(filtered_tasks) == 0:
+    if stats["total_tasks"] == 0:
         print(f"暂无【{selected_task_type}】类型的任务，无法统计。")
         return
 
     print(f"\n===== 【{selected_task_type}】任务统计 =====")
-    show_task_stats(filtered_tasks)
+    print(f"总任务数: {stats['total_tasks']}")
+    print(f"已完成任务数: {stats['completed_tasks']}")
+    print(f"未完成任务数: {stats['unfinished_tasks']}")
+    print(f"总 CPS 奖励: {stats['total_cps']}")
+    print(f"已领取 CPS: {stats['completed_cps']}")
+    print(f"可领取 CPS: {stats['unclaim_cps']}")
+    print(f"未完成 CPS: {stats['unfinished_cps']}")
 
 # 根据任务id查看详情
 def show_selected_task_detail(tasks_data):
@@ -521,7 +564,8 @@ def show_selected_task_detail(tasks_data):
     print("\n===== 任务详情 =====")
     show_task_detail(task)
 
-    # 清空所有任务
+
+# 清空所有任务
 def clear_all_tasks(tasks_data):
     if not has_task_len(tasks_data,"清空"):
        return
@@ -531,7 +575,12 @@ def clear_all_tasks(tasks_data):
         print("已取消操作, 返回主菜单")
         return
 
+    success = clear_all_tasks_in_db()
+
+    if not success:
+        print("清空任务失败。")
+        return
+
     tasks_data.clear()
-    save_tasks_to_json(tasks_data)
     print("所有任务已清空。")
     return

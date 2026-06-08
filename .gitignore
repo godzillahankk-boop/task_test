@@ -14,3 +14,6 @@ task.json
 
 # 虚拟环境不要提交到 GitHub。
 .venv/
+
+# 数据库文件
+tasks.db

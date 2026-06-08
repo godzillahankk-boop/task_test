@@ -1,7 +1,7 @@
 
 import logging
 from logger_config import setup_logger
-from storage import load_tasks_from_json, repair_task_ids
+from storage import load_tasks_from_db, repair_task_ids
 from views import show_menu, show_tasks, show_task_stats
 from task_actions import add_task, complete_task, claim_reward, select_edit_task, delete_one_task, show_task_stats_by_type, show_selected_task_detail, show_tasks_by_type, show_tasks_by_priority, show_overdue_tasks, show_tasks_due_within_7_days, task_filter_center, advanced_filter_tasks, clear_all_tasks
 
@@ -10,7 +10,7 @@ from task_actions import add_task, complete_task, claim_reward, select_edit_task
 def main():
     setup_logger()
     logging.info("Conso 任务奖励系统启动")
-    tasks_data = load_tasks_from_json()
+    tasks_data = load_tasks_from_db()
     repair_task_ids(tasks_data)
 
     menu_actions = {

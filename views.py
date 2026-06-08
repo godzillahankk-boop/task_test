@@ -1,5 +1,6 @@
 from config import TASK_TYPES, TASK_PRIORITIES
-from task_helpers import has_task_len, calculate_task_stats, calculate_filter_stats
+from task_helpers import has_task_len, calculate_filter_stats
+from storage import get_task_stats_from_db
 
 
 
@@ -103,10 +104,11 @@ def show_task_priorities():
 
 # 展示统计结果
 def show_task_stats(tasks_data):
-    if not has_task_len(tasks_data, "统计"):
-        return
+    stats = get_task_stats_from_db()
 
-    stats = calculate_task_stats(tasks_data)
+    if stats["total_tasks"] == 0:
+        print("暂无任务，无法统计。")
+        return
 
     print("\n===== 任务统计 =====")
     print(f"总任务数: {stats['total_tasks']}")
